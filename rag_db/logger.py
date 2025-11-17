@@ -2,9 +2,11 @@
 
 import logging
 import os
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parents[1]
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-LOG_FILE = os.getenv("LOG_FILE", "rag_db.log")
+LOG_FILE = os.getenv("LOG_FILE", str(BASE_DIR / "build" / "rag_db.log"))
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -26,7 +28,9 @@ def get_logger(name: str) -> logging.Logger:
     logger.addHandler(console)
 
     # 2) Лог в файл
-    file_handler = logging.FileHandler(LOG_FILE)
+    log_path = Path(LOG_FILE)
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
