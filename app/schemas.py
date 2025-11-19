@@ -56,8 +56,8 @@ class SearchResponse(BaseModel):
         None,
         description="LLM-generated synthesis of the retrieved snippets.",
     )
-    metrics_filtration: Optional[dict] = Field(
+    metrics: Optional[dict] = Field(
         None,
-        description="Filtration metrics based on objectivity/subjectivity prediction by GroNLP/mdebertav3-subjectivity-multilingual.",
+        description="Metrics based on database search perfomance and objectivity/subjectivity prediction by GroNLP/mdebertav3-subjectivity-multilingual.",
     )
     results: List[NewsItem]

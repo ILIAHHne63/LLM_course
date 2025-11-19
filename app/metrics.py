@@ -140,7 +140,7 @@ def evaluate_subjectivity_filtering_extended(
     subjectivity_classifier = pipeline(
     "text-classification",
     model="GroNLP/mdebertav3-subjectivity-multilingual",
-    device=0
+    device='cpu'
 )
     
     # Парсинг входных данных
@@ -213,19 +213,19 @@ def evaluate_subjectivity_filtering_extended(
     )
     
     # 2. Средняя оценка объективности преобразованных новостей
-    avg_trans_objectivity = (
+    avg_filtred_objectivity = (
         sum(transformed_objectivity_scores) / len(transformed_objectivity_scores)
         if transformed_objectivity_scores else 0.0
     )
     
     # 3. Средняя оценка объективности неподтвержденных новостей
-    avg_unconf_objectivity = (
+    avg_irrelevant_objectivity = (
         sum(unconfirmed_objectivity_scores) / len(unconfirmed_objectivity_scores)
         if unconfirmed_objectivity_scores else 0.0
     )
     
     # 4. Количество неподтвержденных новостей
-    num_unconfirmed = len(unconfirmed_objectivity_scores)
+    relevance_ration = 1 - len(unconfirmed_objectivity_scores) / len(original_objectivity_scores)
     
     # 5. Доля субъективных → объективных (только для подтвержденных)
     confirmed_results = [r for r in results if not r['is_unconfirmed']]
@@ -251,6 +251,6 @@ def evaluate_subjectivity_filtering_extended(
     
     ratio_obj_to_subj = obj_to_subj / total_original_obj if total_original_obj > 0 else 0.0
 
-    metrics_dict = {"avg_orig_objectivity": avg_orig_objectivity, "avg_trans_objectivity": avg_trans_objectivity, "avg_unconf_objectivity": avg_unconf_objectivity, "num_unconfirmed": num_unconfirmed, "ratio_subj_to_obj": ratio_subj_to_obj, "ratio_obj_to_subj": ratio_obj_to_subj}
+    metrics_dict = {"relevance_ratio": relevance_ration, "avg_orig_objectivity": avg_orig_objectivity, "avg_filtred_objectivity": avg_filtred_objectivity, "avg_irrelevant_objectivity": avg_irrelevant_objectivity, "ratio_subj_to_obj": ratio_subj_to_obj, "ratio_obj_to_subj": ratio_obj_to_subj}
     
     return metrics_dict
