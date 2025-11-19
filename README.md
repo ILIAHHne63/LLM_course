@@ -1,7 +1,7 @@
 ## FastAPI сервер
 1. Поднимите OpenSearch: `docker-compose up -d`
 2. Установите зависимости: `pip install -r requirements.txt`
-3. Если хотите загрузить свежие новости из телеграмма в папку `data` используйте `news_parser.py`, вызовите команду `python news_parser.py --api-id ****  --api-hash ****  --channel @minsportrf  --limit 2000 --out minsportrf_messages.json` для выгрузки свежих новостей канала minsportrf. Получите `api-id` и `api-hash` телеграмма через сайт `https://my.telegram.org/auth` или по туториалу `https://tlgrm.ru/docs/api/obtaining_api_id`.
+3. (Опционально, есть предзагруженные новости в ./data) Если хотите загрузить свежие новости из телеграмма в папку `data` используйте `news_parser.py`, вызовите команду `python news_parser.py --api-id ****  --api-hash ****  --channel @minsportrf  --limit 2000 --out minsportrf_messages.json` для выгрузки свежих новостей канала minsportrf. Получите `api-id` и `api-hash` телеграмма через сайт `https://my.telegram.org/auth` или по туториалу `https://tlgrm.ru/docs/api/obtaining_api_id`.
 4. (опционально) Укажите переменные окружения:
    - `DATA_PATH` — путь к директории с JSON-файлами (по умолчанию берётся `./data` из корня репозитория)
    - `NEWS_INDEX_NAME` — имя индекса OpenSearch
