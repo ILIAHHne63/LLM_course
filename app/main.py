@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import List
 
@@ -19,12 +20,11 @@ LLM = LLMClient()
 REASONER = RagReasoner(STORE, LLM)
 BASE_DIR = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = BASE_DIR / "outputs"
-DEFAULT_RESPONSE_PATH = OUTPUT_DIR / "last_answer.json"
 
 app = FastAPI(
     title="Telegram News Search API",
     description=(
-        "Exposes Telegram channel exports (mychannel_messages.json) through rag_db + OpenSearch. "
+        "Exposes Telegram channel exports stored under ./data via rag_db + OpenSearch. "
         "Use /news/query to perform dense, BM25, or phrase search."
     ),
     version="0.1.0",
@@ -95,7 +95,8 @@ def query_news(request: NewsQuery) -> SearchResponse:
         results=[_as_schema(record, record.score) for record in matches],
     )
 
-    path = DEFAULT_RESPONSE_PATH
+    timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    path = OUTPUT_DIR / f"answer_{timestamp}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = response.model_dump(mode="json")
     path.write_text(

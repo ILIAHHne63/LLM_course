@@ -17,18 +17,25 @@ def format_block(title: str, body: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Pretty-print summary information from last_answer.json"
+        description="Pretty-print summary information from the latest saved answer"
     )
-    default_path = Path(__file__).resolve().parents[1] / "outputs" / "last_answer.json"
     parser.add_argument(
         "path",
         nargs="?",
-        default=str(default_path),
-        help=f"Path to the JSON file saved from /news/query (default: {default_path})",
+        default=None,
+        help="Optional path to a specific JSON file. If omitted, the most recent file in outputs/ is used.",
     )
     args = parser.parse_args()
 
-    path = Path(args.path)
+    base_dir = Path(__file__).resolve().parents[1] / "outputs"
+    if args.path:
+        path = Path(args.path)
+    else:
+        candidates = sorted(base_dir.glob("answer_*.json"), reverse=True)
+        if not candidates:
+            print("[show_summary] No answer files found in outputs/.", file=sys.stderr)
+            return 1
+        path = candidates[0]
     if not path.exists():
         print(f"[show_summary] File '{path}' not found.", file=sys.stderr)
         return 1
@@ -52,7 +59,8 @@ def main() -> int:
     for idx, item in enumerate(results, 1):
         channel = item.get("channel_title") or item.get("channel_username") or "Неизвестный источник"
         date = item.get("date") or "Нет даты"
-        header = f"{idx}. {date} — {channel} (score={item.get('score')})"
+        if item.get('score'): header = f"{idx}. {date} — {channel} (score={item.get('score')})"
+        else: header = f"{idx}. {date} — {channel}"
         print(header)
         text = (item.get("text") or "").replace("\n", " ").strip()
         wrapped = textwrap.fill(text, width=100, initial_indent="   ", subsequent_indent="   ")
