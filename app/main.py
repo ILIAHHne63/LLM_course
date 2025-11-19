@@ -73,7 +73,7 @@ def get_news(news_id: str) -> NewsItem:
 
 @app.post("/news/query", response_model=SearchResponse)
 def query_news(request: NewsQuery) -> SearchResponse:
-    plan, matches, extracted, summary = REASONER.answer(
+    plan, matches, extracted, summary, metrics = REASONER.answer(
         request.query, request.limit, request.force_mode
     )
     strategy = SearchStrategy(
@@ -92,6 +92,7 @@ def query_news(request: NewsQuery) -> SearchResponse:
         strategy=strategy,
         extracted_information=extracted,
         summary=summary,
+        metrics=metrics,
         results=[_as_schema(record, record.score) for record in matches],
     )
 

@@ -7,6 +7,7 @@ from typing import List, Optional, Sequence
 from langchain_core.messages import BaseMessage
 
 from .llm_client import LLMClient
+from .metrics import evaluate_subjectivity_filtering_extended
 from .news_store import NewsRecord, NewsStore
 from .prompts import (
     analyst_system_prompt,
@@ -78,7 +79,7 @@ class Analyst:
         if not posts:
             return ""
         messages = [analyst_system_prompt, extraction_prompt(user_query, posts)]
-        return self.llm.generate(messages)
+        return self.llm.generate(messages), messages[1]
 
     def summarize(self, user_query: str, extracted_info: str) -> str:
         if not extracted_info:
@@ -108,9 +109,10 @@ class RagReasoner:
             plan = self.planner.plan(user_query)
 
         records = self.store.retrieve_with_plan(plan, limit)
-        extracted = self.analyst.extract(user_query, records)
+        extracted, query_llm = self.analyst.extract(user_query, records)
+        metrics = evaluate_subjectivity_filtering_extended(query_llm.content, extracted)
         summary = self.analyst.summarize(user_query, extracted)
-        return plan, records, extracted, summary
+        return plan, records, extracted, summary, metrics
 
     def _plan_from_override(self, query: str, mode: str) -> RetrievalPlan:
         mode = mode.lower()
