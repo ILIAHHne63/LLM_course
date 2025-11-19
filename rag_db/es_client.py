@@ -24,5 +24,6 @@ def get_client(host: str = ES_HOST,
         hosts=[{"host": "localhost", "port": 9200}],
         use_ssl=False,
         verify_certs=False,
+        timeout=60,
     )
     return client

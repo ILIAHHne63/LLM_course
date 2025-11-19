@@ -225,7 +225,7 @@ def evaluate_subjectivity_filtering_extended(
     )
     
     # 4. Количество неподтвержденных новостей
-    relevance_ration = 1 - len(unconfirmed_objectivity_scores) / len(original_objectivity_scores)
+    relevance_ratio = len(original_objectivity_scores) / len(original_news)
     
     # 5. Доля субъективных → объективных (только для подтвержденных)
     confirmed_results = [r for r in results if not r['is_unconfirmed']]
@@ -251,6 +251,6 @@ def evaluate_subjectivity_filtering_extended(
     
     ratio_obj_to_subj = obj_to_subj / total_original_obj if total_original_obj > 0 else 0.0
 
-    metrics_dict = {"relevance_ratio": relevance_ration, "avg_orig_objectivity": avg_orig_objectivity, "avg_filtred_objectivity": avg_filtred_objectivity, "avg_irrelevant_objectivity": avg_irrelevant_objectivity, "ratio_subj_to_obj": ratio_subj_to_obj, "ratio_obj_to_subj": ratio_obj_to_subj}
+    metrics_dict = {"relevance_ratio": round(relevance_ratio, 2), "avg_orig_objectivity": round(avg_orig_objectivity, 3), "avg_filtred_objectivity": round(avg_filtred_objectivity, 3), "avg_irrelevant_objectivity": round(avg_irrelevant_objectivity, 3), "ratio_subj_to_obj": round(ratio_subj_to_obj, 3), "ratio_obj_to_subj": round(ratio_obj_to_subj, 3)}
     
     return metrics_dict
