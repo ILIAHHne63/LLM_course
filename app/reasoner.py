@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
 from langchain_core.messages import BaseMessage
+from langchain_core.messages import HumanMessage
 
 from .llm_client import LLMClient
 from .metrics import evaluate_subjectivity_filtering_extended
@@ -77,7 +78,7 @@ class Analyst:
             if record.text
         ]
         if not posts:
-            return ""
+            return "", HumanMessage(content="")
         messages = [analyst_system_prompt, extraction_prompt(user_query, posts)]
         return self.llm.generate(messages), messages[1]
 
