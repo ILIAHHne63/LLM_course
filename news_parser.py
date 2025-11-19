@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-tg_export.py
+news_parser.py
 Export messages from a Telegram channel into a JSON file.
 
 Usage examples:
@@ -148,11 +148,19 @@ async def main():
 
     output = messages
 
-    # Write output JSON
     try:
-        with open(args.out, "w", encoding="utf-8") as f:
+        # Создаем папку data если её нет
+        data_dir = "data"
+        os.makedirs(data_dir, exist_ok=True)
+        
+        # Формируем путь для сохранения в папке data
+        data_out = os.path.join(data_dir, os.path.basename(args.out))
+        
+        # Сохраняем только в папку data
+        with open(data_out, "w", encoding="utf-8") as f:
             json.dump(output, f, ensure_ascii=False, indent=2)
-        print(f"Saved {len(messages)} messages to {args.out}")
+        print(f"Saved {len(messages)} messages to {data_out}")
+
     except Exception as e:
         raise SystemExit(f"Failed to write output file: {e}")
 
