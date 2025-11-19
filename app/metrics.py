@@ -225,7 +225,9 @@ def evaluate_subjectivity_filtering_extended(
     )
     
     # 4. Количество неподтвержденных новостей
-    relevance_ratio = len(original_objectivity_scores) / len(original_news)
+    relevance_ratio = (len(original_objectivity_scores) / len(original_news) 
+                       if len(original_news) > 0 else 0.0
+    )
     
     # 5. Доля субъективных → объективных (только для подтвержденных)
     confirmed_results = [r for r in results if not r['is_unconfirmed']]
