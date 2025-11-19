@@ -1,23 +1,8 @@
-# RAG Elasticsearch module
-
-
-Запуск:
-
-
-1. `docker-compose up -d`
-2. Установить зависимости: `pip install -r requirements.txt`
-3. Прописать и положить свои документы в example.py или используйте свой парсер для Telegram
-4. Запустить `python -m rag_db.example`
-
 ## FastAPI сервер
-
-`mychannel_messages.json` — это выгрузка из Telegram, которую можно получить через `news_parser.py`.
-Чтобы сделать эти данные доступными через HTTP:
-
 1. Поднимите OpenSearch: `docker-compose up -d`
 2. Установите зависимости: `pip install -r requirements.txt`
 3. (опционально) Укажите переменные окружения:
-   - `NEWS_JSON_PATH` — путь к JSON файлу с сообщениями (по умолчанию берётся `mychannel_messages.json` из корня репозитория)
+   - `DATA_PATH` — путь к директории с JSON-файлами (по умолчанию берётся `./data` из корня репозитория)
    - `NEWS_INDEX_NAME` — имя индекса OpenSearch
    - `FORCE_REBUILD_NEWS_INDEX=1` — чтобы принудительно переиндексировать данные при старте сервера
    - `OPENSEARCH_RETRY_ATTEMPTS` / `OPENSEARCH_RETRY_DELAY` — сколько раз и с каким интервалом API ждёт доступности OpenSearch
@@ -25,7 +10,7 @@
 4. Запустите API: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 
 > Все переменные можно задать в `.env` (см. пример в корне репозитория) — сервер автоматически подхватывает этот файл при старте.
-> Логи сохраняются в `build/rag_db.log`, а каждый ответ API записывается в `outputs/last_answer.json`.
+> Логи сохраняются в `build/rag_db.log`, а каждый ответ API записывается в директорию `outputs/`.
 
 Эндпоинты:
 - `GET /health` — проверка статуса и кол-ва документов в индексе
@@ -42,6 +27,11 @@ curl -s -X POST http://localhost:8000/news/query \
   -H "Content-Type: application/json" \
   -d '{"query": "Последние новости России", "limit": 3, "force_mode": "vector"}' \
   > /dev/null && python scripts/show_summary.py
+```
+
+Для удобства есть скрипт. Сначала указываете текст, потом количество новостей:
+```bash
+./scripts/query_news.sh "Последние новости России" 5
 ```
 
 
@@ -68,11 +58,10 @@ curl -s -X POST http://localhost:8000/news/query \
 }
 ```
 
-`scripts/show_summary.py` читает файл `outputs/last_answer.json` (или путь, переданный аргументом) и выводит аккуратно отформатированную сводку + топ новостей, чтобы терминал не захламлялся «сырым» JSON.
+`scripts/show_summary.py` берёт самый свежий файл `outputs/answer_YYYYMMDD-HHMMSS.json` (или путь, переданный аргументом) и выводит аккуратно отформатированную сводку + топ новостей на терминал.
 
 ### Как устроена обработка запроса
 
-Сервер повторяет схему из ноутбука `api_testing.ipynb`:
 1. **Принимаем запрос.** Пользователь вызывает `POST /news/query` с текстом вопроса.
 2. **LLM формирует стратегию.** Агент на базе `mistral-large-latest` решает, использовать ли SQL, векторный или текстовый поиск и возвращает JSON-план.
 3. **Ищем по БД.** Согласно плану выполняются SQL/векторные/BM25 запросы к OpenSearch (данные из `mychannel_messages.json` заранее проиндексированы).

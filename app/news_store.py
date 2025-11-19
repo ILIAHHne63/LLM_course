@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 import re
 import time
@@ -27,11 +26,10 @@ def _env_flag(name: str) -> bool:
 
 
 def resolve_dataset_path() -> Path:
-    env_path = os.getenv("NEWS_JSON_PATH")
+    env_path = os.getenv("DATA_PATH")
     if env_path:
         return Path(env_path)
-    return Path(__file__).resolve().parents[1] / "mychannel_messages.json"
-
+    return Path(__file__).resolve().parents[1] / "data"
 
 @dataclass
 class NewsRecord:
@@ -46,54 +44,6 @@ class NewsRecord:
     score: Optional[float] = None
 
 
-class JsonNewsLoader(DataLoader):
-    """Specialized DataLoader that reads a single Telegram export file."""
-
-    def __init__(
-        self,
-        dataset_path: Path,
-        index_name: str,
-        embedder: Embedder,
-        indexer: Indexer,
-    ):
-        self.dataset_path = dataset_path
-        super().__init__(
-            data_dir=str(dataset_path.parent),
-            index_name=index_name,
-            embedder=embedder,
-            indexer=indexer,
-        )
-
-    def load_files(self) -> List[dict]:
-        if not self.dataset_path.exists():
-            raise FileNotFoundError(
-                f"The dataset {self.dataset_path.resolve()} could not be found"
-            )
-        with open(self.dataset_path, encoding="utf-8") as fp:
-            payload = json.load(fp)
-
-        rows: List[dict]
-        if isinstance(payload, list):
-            rows = payload
-        elif isinstance(payload, dict):
-            rows = [payload]
-        else:
-            raise ValueError("Dataset must be a JSON object or list of objects")
-
-        prepared: List[dict] = []
-        for idx, doc in enumerate(rows):
-            enriched = dict(doc)
-            enriched.setdefault("content", enriched.get("text", ""))
-            doc_id = (
-                str(enriched.get("id"))
-                if enriched.get("id") is not None
-                else str(enriched.get("_id", idx))
-            )
-            enriched["_id"] = doc_id
-            prepared.append(enriched)
-        return prepared
-
-
 class NewsStore:
     """Thin wrapper that reuses rag_db's loader/indexer for serving API traffic."""
 
@@ -106,8 +56,11 @@ class NewsStore:
         self.index_name = index_name or os.getenv("NEWS_INDEX_NAME", "news_mychannel")
         self.embedder = Embedder()
         self.indexer = Indexer(self.index_name)
-        self.loader = JsonNewsLoader(
-            self.dataset_path, self.index_name, self.embedder, self.indexer
+        self.loader = DataLoader(
+            data_dir=str(self.dataset_path),
+            index_name=self.index_name,
+            embedder=self.embedder,
+            indexer=self.indexer,
         )
         self._wait_for_opensearch()
         self._ensure_index()
