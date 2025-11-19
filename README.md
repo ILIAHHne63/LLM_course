@@ -1,13 +1,14 @@
 ## FastAPI сервер
 1. Поднимите OpenSearch: `docker-compose up -d`
 2. Установите зависимости: `pip install -r requirements.txt`
-3. (опционально) Укажите переменные окружения:
+3. Если хотите загрузить свежие новости из телеграмма в папку `data` используйте `news_parser.py`, вызовите команду `python news_parser.py --api-id ****  --api-hash ****  --channel @minsportrf  --limit 2000 --out minsportrf_messages.json`. Получите `api-id` и `api-hash` телеграмма через сайт `https://my.telegram.org/auth` или по туториалу `https://tlgrm.ru/docs/api/obtaining_api_id`.
+4. (опционально) Укажите переменные окружения:
    - `DATA_PATH` — путь к директории с JSON-файлами (по умолчанию берётся `./data` из корня репозитория)
    - `NEWS_INDEX_NAME` — имя индекса OpenSearch
    - `FORCE_REBUILD_NEWS_INDEX=1` — чтобы принудительно переиндексировать данные при старте сервера
    - `OPENSEARCH_RETRY_ATTEMPTS` / `OPENSEARCH_RETRY_DELAY` — сколько раз и с каким интервалом API ждёт доступности OpenSearch
    - `MISTRAL_API_KEY` — ключ доступа к Mistral API (см. пример в `api_testing.ipynb`)
-4. Запустите API: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+5. Запустите API: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 
 > Все переменные можно задать в `.env` (см. пример в корне репозитория) — сервер автоматически подхватывает этот файл при старте.
 > Логи сохраняются в `build/rag_db.log`, а каждый ответ API записывается в директорию `outputs/`.
