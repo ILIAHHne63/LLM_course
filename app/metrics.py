@@ -240,7 +240,7 @@ def evaluate_subjectivity_filtering_extended(
         1 for r in confirmed_results if r['original_label'] == 'Субъективная'
     )
     
-    ratio_subj_to_obj = subj_to_obj / total_original_subj if total_original_subj > 0 else 0.0
+    ratio_subj_to_obj = subj_to_obj / total_original_subj if total_original_subj > 0 else 1.0
     
     # 6. Доля объективных → субъективных
     obj_to_subj = sum(
